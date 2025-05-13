@@ -5,6 +5,9 @@ on:
     tags:
       - 'v*'
 
+permissions:
+  package: write
+
 jobs:
   container:
     name: Publish container image
