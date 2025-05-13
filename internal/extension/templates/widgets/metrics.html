@@ -1,0 +1,70 @@
+{{- define "widgets/metrics" }}
+{{- range . }}
+<div class="server">
+	<div class="server-info">
+		{{- $isReady := .ConditionTrue "Ready" }}
+		<div class="server-details">
+			<div class="server-name color-highlight size-h3">{{ .Name }}</div>
+			{{- if $isReady }}
+			{{- $readySince := .ConditionTransition "Ready" }}
+			<div>{{ $readySince | ago | durationRound }} uptime</div>
+			{{- end }}
+		</div>
+		<div class="shrink-0" data-popover-type="html" data-popover-margin="0.2rem" data-popover-max-width="400px">
+			<div data-popover-html>
+				{{- with .Status.NodeInfo }}
+				<div class="size-h5 text-compact">PLATFORM</div>
+				<div class="color-highlight">{{ .OSImage }}</div>
+				<div class="size-h5 text-compact">KUBLET</div>
+				<div class="color-highlight">{{ .KubeletVersion }}</div>
+				{{- end }}
+				{{- if .Roles }}
+				<div class="size-h5 text-compact">ROLES</div>
+				<div class="color-highlight">{{ .Roles | join ", " }}</div>
+				{{- end }}
+			</div>
+			{{- $stroke := printf "var(--color-%s)" ($isReady | ternary "positive" "negative") }}
+			{{ template "icons/server" (dict "Stroke" $stroke) }}
+		</div>
+	</div>
+
+	<div class="server-stats">
+		<div class="flex-1">
+			<div class="flex items-end size-h5">
+				<div>CPU</div>
+				<div class="color-highlight margin-left-auto text-very-compact">
+					{{ .CpuRatio | mulf 100 | printf "%.2f" }} <span class="color-base">%</span>
+				</div>
+			</div>
+			<div class="progress-bar">
+				<div class="progress-value" style="--percent: {{ .CpuRatio | mulf 100 }}"></div>
+			</div>
+		</div>
+		<div class="flex-1">
+			<div class="flex items-end size-h5">
+				<div>RAM</div>
+				<div class="color-highlight margin-left-auto text-very-compact">
+					{{ .MemRatio | mulf 100 | printf "%.2f" }} <span class="color-base">%</span>
+				</div>
+			</div>
+			<div data-popover-type="html">
+				<div data-popover-html>
+					<div class="flex">
+						<div class="size-h5">RAM</div>
+						<div class="value-separator"></div>
+						<div class="color-highlight text-very-compact">
+							{{ .Metrics.Usage.Memory | formatResourceQuantity }}
+							<span class="color-base size-h5">/</span>
+							{{ .Status.Capacity.Memory | formatResourceQuantity }}
+						</div>
+					</div>
+				</div>
+				<div class="progress-bar">
+					<div class="progress-value" style="--percent: {{ .MemRatio | mulf 100 }}"></div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+{{- end }}
+{{- end }}
