@@ -1,0 +1,40 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v.*'
+
+jobs:
+  container:
+    name: Publish container image
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Container Tags
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: |
+            ghcr.io/lukasdietrich/glance-k8s/glance-k8s
+          tags: |
+            type=semver,pattern=v{{version}}
+            type=semver,pattern=v{{major}}
+
+      - uses: redhat-actions/buildah-build@v2
+        id: build-image
+        with:
+          tags: ${{ steps.meta.outputs.tags }}
+          containerfiles: |
+            ./Containerfile
+
+      - uses: redhat-actions/push-to-registry@v2
+        with:
+          tags: ${{ steps.build-image.outputs.tags }}
+          username: ${{ github.actor }}
+          password: ${{ github.token }}
