@@ -1,0 +1,33 @@
+{{- if .Values.serviceAccount.create -}}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: {{ include "glance-k8s.serviceAccountName" . }}
+  labels:
+    {{- include "glance-k8s.labels" . | nindent 4 }}
+rules:
+  - apiGroups:
+      - ""
+      - metrics.k8s.io
+    resources:
+      - nodes
+    verbs:
+      - get
+      - list
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: {{ include "glance-k8s.serviceAccountName" . }}
+  labels:
+    {{- include "glance-k8s.labels" . | nindent 4 }}
+roleRef:
+  apiGroups: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: {{ include "glance-k8s.serviceAccountName" . }}
+subjects:
+  - kind: ServiceAccount
+    name: {{ include "glance-k8s.serviceAccountName" . }}
+    namespace: {{ .Release.Namespace }}
+{{- end }}
