@@ -67,7 +67,21 @@ func (n *Node) MemRatio() float64 {
 	return usage / capacity
 }
 
-func (c *Client) ListNodes(ctx context.Context) ([]Node, error) {
+type NodeSlice []Node
+
+func (n NodeSlice) Len() int {
+	return len(n)
+}
+
+func (n NodeSlice) Less(i, j int) bool {
+	return n[i].Name < n[j].Name
+}
+
+func (n NodeSlice) Swap(i int, j int) {
+	n[i], n[j] = n[j], n[i]
+}
+
+func (c *Client) ListNodes(ctx context.Context) (NodeSlice, error) {
 	opts := metav1.ListOptions{}
 
 	nodesList, err := c.kube.CoreV1().Nodes().List(ctx, opts)
@@ -80,10 +94,8 @@ func (c *Client) ListNodes(ctx context.Context) ([]Node, error) {
 		return nil, fmt.Errorf("could not fetch node metrics: %w", err)
 	}
 
-	nodes := lo.Map(nodesList.Items, mapNode(metricsList.Items))
-	sort.SliceStable(nodes, func(i, j int) bool {
-		return nodes[i].Name < nodes[j].Name
-	})
+	nodes := NodeSlice(lo.Map(nodesList.Items, mapNode(metricsList.Items)))
+	sort.Stable(nodes)
 
 	return nodes, nil
 }
