@@ -82,22 +82,38 @@ func (n NodeSlice) Swap(i int, j int) {
 }
 
 func (c *Client) ListNodes(ctx context.Context) (NodeSlice, error) {
-	opts := metav1.ListOptions{}
-
-	nodesList, err := c.kube.CoreV1().Nodes().List(ctx, opts)
+	clusterNodes, err := fetchContinue(ctx, c.listNodes)
 	if err != nil {
 		return nil, fmt.Errorf("could not fetch nodes: %w", err)
 	}
 
-	metricsList, err := c.metrics.MetricsV1beta1().NodeMetricses().List(ctx, opts)
+	clusterNodeMetrics, err := fetchContinue(ctx, c.listNodeMetrics)
 	if err != nil {
 		return nil, fmt.Errorf("could not fetch node metrics: %w", err)
 	}
 
-	nodes := NodeSlice(lo.Map(nodesList.Items, mapNode(metricsList.Items)))
+	nodes := NodeSlice(lo.Map(clusterNodes, mapNode(clusterNodeMetrics)))
 	sort.Stable(nodes)
 
 	return nodes, nil
+}
+
+func (c *Client) listNodes(ctx context.Context, opts metav1.ListOptions) ([]corev1.Node, string, error) {
+	nodesList, err := c.kube.CoreV1().Nodes().List(ctx, opts)
+	if err != nil {
+		return nil, "", err
+	}
+
+	return nodesList.Items, nodesList.Continue, nil
+}
+
+func (c *Client) listNodeMetrics(ctx context.Context, opts metav1.ListOptions) ([]metricsv1beta1.NodeMetrics, string, error) {
+	metricsList, err := c.metrics.MetricsV1beta1().NodeMetricses().List(ctx, opts)
+	if err != nil {
+		return nil, "", err
+	}
+
+	return metricsList.Items, metricsList.Continue, nil
 }
 
 func mapNode(metricsSlice []metricsv1beta1.NodeMetrics) func(corev1.Node, int) Node {
