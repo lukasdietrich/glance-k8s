@@ -10,7 +10,7 @@ import (
 	"github.com/lukasdietrich/glance-k8s/internal/k8s"
 )
 
-func New(client *k8s.Client) http.Handler {
+func New(cluster *k8s.Cluster) http.Handler {
 	r := echo.New()
 	r.Renderer = mustTemplates()
 
@@ -25,8 +25,8 @@ func New(client *k8s.Client) http.Handler {
 	e.Use(widgetContentType("html"))
 	e.Use(widgetContentFrameless(false))
 
-	e.GET("/metrics", metrics(client), widgetTitle("Kubernetes Metrics"))
-	e.GET("/pods", pods(client), widgetTitle("Kubernetes Pods"))
+	e.GET("/nodes", nodes(cluster), widgetTitle("Kubernetes Nodes"))
+	e.GET("/apps", apps(cluster), widgetTitle("Kubernetes Apps"))
 
 	return r
 }

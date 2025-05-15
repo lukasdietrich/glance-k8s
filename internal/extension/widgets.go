@@ -8,19 +8,19 @@ import (
 	"github.com/lukasdietrich/glance-k8s/internal/k8s"
 )
 
-func metrics(client *k8s.Client) echo.HandlerFunc {
+func nodes(cluster *k8s.Cluster) echo.HandlerFunc {
 	return func(ctx echo.Context) error {
-		nodes, err := client.ListNodes(ctx.Request().Context())
+		nodes, err := cluster.Nodes(ctx.Request().Context())
 		if err != nil {
 			return err
 		}
 
-		return ctx.Render(http.StatusOK, "widgets/metrics", nodes)
+		return ctx.Render(http.StatusOK, "widgets/nodes", nodes)
 	}
 }
 
-func pods(*k8s.Client) echo.HandlerFunc {
+func apps(cluster *k8s.Cluster) echo.HandlerFunc {
 	return func(ctx echo.Context) error {
-		return echo.NewHTTPError(http.StatusNotImplemented)
+		return ctx.NoContent(http.StatusNotImplemented)
 	}
 }

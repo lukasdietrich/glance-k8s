@@ -1,4 +1,4 @@
-package k8s
+package api
 
 import (
 	"context"
@@ -6,7 +6,6 @@ import (
 	"log/slog"
 	"os"
 
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
@@ -62,26 +61,25 @@ func findKubernetesConfigFilename() string {
 	return os.ExpandEnv("${HOME}/.kube/config")
 }
 
-func fetchContinue[V any](
-	ctx context.Context,
-	fetch func(context.Context, metav1.ListOptions) ([]V, string, error),
-) ([]V, error) {
-	var opts metav1.ListOptions
-	var values []V
+type fetchFunc[Item any] func(context.Context, listOptions) ([]Item, string, error)
+
+func fetchContinue[Item any](ctx context.Context, fetch fetchFunc[Item]) ([]Item, error) {
+	var opts listOptions
+	var items []Item
 
 	for {
-		vs, cont, err := fetch(ctx, opts)
+		itemsChunk, continueToken, err := fetch(ctx, opts)
 		if err != nil {
 			return nil, err
 		}
 
-		values = append(values, vs...)
+		items = append(items, itemsChunk...)
 
-		if cont == "" {
-			return values, nil
+		if continueToken == "" {
+			return items, nil
 		}
 
-		slog.Debug("continue api call", slog.String("continue", cont))
-		opts.Continue = cont
+		slog.Debug("continue api call", slog.String("continue", continueToken))
+		opts.Continue = continueToken
 	}
 }

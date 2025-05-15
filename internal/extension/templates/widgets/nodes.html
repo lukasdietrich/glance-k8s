@@ -1,4 +1,4 @@
-{{- define "widgets/metrics" }}
+{{- define "widgets/nodes" }}
 {{- range . }}
 <div class="server">
 	<div class="server-info">
@@ -23,8 +23,9 @@
 				<div class="color-highlight">{{ .Roles | join ", " }}</div>
 				{{- end }}
 			</div>
-			{{- $stroke := printf "var(--color-%s)" ($isReady | ternary "positive" "negative") }}
-			{{ template "icons/server" (dict "Stroke" $stroke) }}
+			<div class="color-{{ $isReady | ternary "positive" "negative" }}">
+				{{ template "icons/server" (dict "Class" "server-icon") }}
+			</div>
 		</div>
 	</div>
 
