@@ -6,8 +6,9 @@ require (
 	github.com/Masterminds/sprig/v3 v3.3.0
 	github.com/labstack/echo/v4 v4.13.3
 	github.com/samber/lo v1.50.0
+	golang.org/x/text v0.25.0
 	k8s.io/api v0.33.0
-	k8s.io/apimachinery v0.33.0
+	k8s.io/apimachinery v0.33.1
 	k8s.io/client-go v0.33.0
 	k8s.io/metrics v0.33.0
 )
@@ -51,7 +52,6 @@ require (
 	golang.org/x/oauth2 v0.30.0 // indirect
 	golang.org/x/sys v0.33.0 // indirect
 	golang.org/x/term v0.32.0 // indirect
-	golang.org/x/text v0.25.0 // indirect
 	golang.org/x/time v0.11.0 // indirect
 	google.golang.org/protobuf v1.36.6 // indirect
 	gopkg.in/evanphx/json-patch.v4 v4.12.0 // indirect
