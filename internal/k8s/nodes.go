@@ -7,8 +7,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/lukasdietrich/glance-k8s/internal/k8s/api"
 	"github.com/samber/lo"
+
+	"github.com/lukasdietrich/glance-k8s/internal/k8s/api"
 )
 
 type NodeSlice []Node

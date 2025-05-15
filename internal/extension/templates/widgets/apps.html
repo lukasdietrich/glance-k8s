@@ -1,0 +1,45 @@
+{{- define "widgets/apps" }}
+<ul class="dynamic-columns list-gap-20 list-with-separator">
+	{{- range . }}
+	<li class="docker-container flex items-center gap-15">
+		<div class="shrink-0" data-popover-type="html" data-popover-position="above" data-popover-offset="0.25" data-popover-margin="0.1rem" data-popover-max-width="400px">
+			{{- $icon := index .Annotations "glance/icon" }}
+			{{- if $icon  }}
+			<img class="docker-container-icon" src="{{ $icon | icon }}" loading="lazy">
+			{{- end }}
+			<div data-popover-html>
+				{{ template "widgets/apps/workload" .Workload }}
+				{{- range .Dependencies }}
+				{{ template "widgets/apps/workload" . }}
+				{{- end }}
+			</div>
+		</div>
+		<div class="min-width-0 grow">
+			{{- $url := .Url }}
+			{{- if $url }}
+			<a class="color-highlight size-title-dynamic block text-truncate" href="{{ $url | url }}" {{ if not .SameTab }}target="_blank"{{ end }} rel="noreferrer">{{ .Name }}</a>
+			{{- else }}
+			<h3 class="color-highlight text-truncate size-title-dynamic">{{ .Name }}</h3>
+			{{- end }}
+			{{- if .Description }}
+			<div class="text-truncate">{{ .Description }}</div>
+			{{- end }}
+		</div>
+	</li>
+	{{- end }}
+</ul>
+{{- end }}
+
+{{- define "widgets/apps/workload" }}
+<div class="flex">
+	<div class="size-h5">{{ .GetName }}</div>
+	<div class="value-separator"></div>
+	{{- with .GetStatus }}
+	<div class="color-highlight text-very-compact">
+		<span {{ if not (eq .ReadyReplicas .Replicas) }}class="color-negative"{{ end }}>{{ .ReadyReplicas }}</span>
+		<span class="color-base">/</span>
+		{{ .Replicas }}
+	</div>
+	{{- end }}
+</div>
+{{- end }}

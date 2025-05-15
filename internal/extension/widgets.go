@@ -21,6 +21,11 @@ func nodes(cluster *k8s.Cluster) echo.HandlerFunc {
 
 func apps(cluster *k8s.Cluster) echo.HandlerFunc {
 	return func(ctx echo.Context) error {
-		return ctx.NoContent(http.StatusNotImplemented)
+		apps, err := cluster.Apps(ctx.Request().Context())
+		if err != nil {
+			return err
+		}
+
+		return ctx.Render(http.StatusOK, "widgets/apps", apps)
 	}
 }

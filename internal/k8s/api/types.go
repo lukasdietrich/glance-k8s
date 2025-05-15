@@ -22,8 +22,16 @@ type NodeStatus = corev1.NodeStatus
 type NodeMetrics = metricsv1beta1.NodeMetrics
 
 type Ingress = networkingv1.Ingress
+type HTTPIngressPath = networkingv1.HTTPIngressPath
 type Service = corev1.Service
 
 type Deployment = appsv1.Deployment
+type DeploymentSpec = appsv1.DeploymentSpec
+
 type StatefulSet = appsv1.StatefulSet
+type StatefulSetSpec = appsv1.StatefulSetSpec
+
 type DaemonSet = appsv1.DaemonSet
+type DaemonSetSpec = appsv1.DaemonSetSpec
+
+type LabelSelector = metav1.LabelSelector
