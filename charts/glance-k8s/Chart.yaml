@@ -2,5 +2,5 @@ apiVersion: v2
 name: glance-k8s
 description: A Helm chart for glance-k8s
 type: application
-version: 0.1.0
-appVersion: "0.0.1-rc.4"
+version: v0.0.0
+appVersion: "v0.0.0"

@@ -24,7 +24,7 @@ jobs:
         uses: docker/metadata-action@v5
         with:
           images: |
-            ghcr.io/lukasdietrich/glance-k8s/glance-k8s
+            ghcr.io/${{ github.repository }}/glance-k8s
           tags: |
             type=semver,pattern=v{{version}}
             type=semver,pattern=v{{major}}
@@ -41,3 +41,25 @@ jobs:
           tags: ${{ steps.build-image.outputs.tags }}
           username: ${{ github.actor }}
           password: ${{ github.token }}
+
+  helm:
+    name: Publish helm chart
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout 
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Login to ghcr.io
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ github.token }}
+
+      - name: Push chart
+        run: |
+          helm package charts/glance-k8s --version ${{ github.ref_name }} --app-version ${{ github.ref_name }}
+          helm push "glance-k8s-${{ github.ref_name }}.tgz" "oci://ghcr.io/${{ github.repository }}"
