@@ -25,10 +25,13 @@ func Connect() (*Client, error) {
 
 	kube, err := kubernetes.NewForConfig(config)
 	if err != nil {
-		return nil, fmt.Errorf("could not connect to kubernetes: %w", err)
+		return nil, fmt.Errorf("could not create kubernetes client: %w", err)
 	}
 
 	metrics, err := metricsv.NewForConfig(config)
+	if err != nil {
+		return nil, fmt.Errorf("could not create metrics client: %w", err)
+	}
 
 	return &Client{
 		kube:    kube,
