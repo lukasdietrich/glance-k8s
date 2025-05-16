@@ -55,7 +55,11 @@ func (a *App) Name() string {
 }
 
 func (a *App) Icon() string {
-	return a.Annotations[aIcon]
+	if icon, ok := a.Annotations[aIcon]; ok {
+		return icon
+	}
+
+	return "di:kubernetes"
 }
 
 func (a *App) Url() string {

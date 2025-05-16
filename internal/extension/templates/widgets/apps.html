@@ -3,9 +3,8 @@
 	{{- range . }}
 	<li class="docker-container flex items-center gap-15">
 		<div class="shrink-0" data-popover-type="html" data-popover-position="above" data-popover-offset="0.25" data-popover-margin="0.1rem" data-popover-max-width="400px">
-			{{- $icon := index .Annotations "glance/icon" }}
-			{{- if $icon  }}
-			<img class="docker-container-icon" src="{{ $icon | icon }}" loading="lazy">
+			{{- with .Icon }}
+			<img class="docker-container-icon" src="{{ . | icon }}" loading="lazy">
 			{{- end }}
 			<div data-popover-html>
 				{{ template "widgets/apps/workload" .Workload }}
