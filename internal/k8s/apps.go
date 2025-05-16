@@ -6,6 +6,7 @@ import (
 	"log/slog"
 	"maps"
 	"net/url"
+	"regexp"
 	"sort"
 
 	"github.com/samber/lo"
@@ -133,10 +134,18 @@ func (a *App) Ready() bool {
 	return true
 }
 
-func (c *Cluster) Apps(ctx context.Context) (AppSlice, error) {
+type AppsOptions struct {
+	HidePattern []string
+}
+
+func (c *Cluster) Apps(ctx context.Context, opts AppsOptions) (AppSlice, error) {
 	workloads, err := c.workloads(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("could not fetch workloads: %w", err)
+	}
+
+	if workloads, err = filterWorkloads(workloads, opts); err != nil {
+		return nil, fmt.Errorf("could not filter workloads: %w", err)
 	}
 
 	services, err := c.client.Services(ctx)
@@ -177,6 +186,34 @@ func (c *Cluster) Apps(ctx context.Context) (AppSlice, error) {
 
 	sort.Stable(apps)
 	return apps, nil
+}
+
+func filterWorkloads(workloads WorkloadSlice, opts AppsOptions) (WorkloadSlice, error) {
+	if len(opts.HidePattern) == 0 {
+		return workloads, nil
+	}
+
+	hidePatterns := make([]*regexp.Regexp, len(opts.HidePattern))
+	for i, pattern := range opts.HidePattern {
+		if re, err := regexp.Compile(pattern); err != nil {
+			return nil, err
+		} else {
+			hidePatterns[i] = re
+		}
+	}
+
+	filter := func(workload Workload, _ int) bool {
+		fullname := resourceFullname(workload)
+		for _, hidePattern := range hidePatterns {
+			if hidePattern.MatchString(fullname) {
+				return false
+			}
+		}
+
+		return true
+	}
+
+	return lo.Filter(workloads, filter), nil
 }
 
 func groupApps(workloads WorkloadSlice) AppSlice {

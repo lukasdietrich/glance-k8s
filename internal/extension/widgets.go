@@ -21,7 +21,15 @@ func nodes(cluster *k8s.Cluster) echo.HandlerFunc {
 
 func apps(cluster *k8s.Cluster) echo.HandlerFunc {
 	return func(ctx echo.Context) error {
-		apps, err := cluster.Apps(ctx.Request().Context())
+		var req struct {
+			HidePattern []string `query:"hide-pattern"`
+		}
+
+		if err := ctx.Bind(&req); err != nil {
+			return err
+		}
+
+		apps, err := cluster.Apps(ctx.Request().Context(), k8s.AppsOptions(req))
 		if err != nil {
 			return err
 		}
