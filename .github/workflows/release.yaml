@@ -62,4 +62,4 @@ jobs:
       - name: Push chart
         run: |
           helm package charts/glance-k8s --version ${{ github.ref_name }} --app-version ${{ github.ref_name }}
-          helm push "glance-k8s-${{ github.ref_name }}.tgz" "oci://ghcr.io/${{ github.repository }}"
+          helm push "glance-k8s-${{ github.ref_name }}.tgz" "oci://ghcr.io/${{ github.repository }}/chart"
