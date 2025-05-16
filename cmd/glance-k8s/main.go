@@ -11,7 +11,9 @@ import (
 )
 
 func init() {
-	slog.SetLogLoggerLevel(slog.LevelDebug)
+	if os.Getenv("GLANCE_DEBUG") != "" {
+		slog.SetLogLoggerLevel(slog.LevelDebug)
+	}
 }
 
 func main() {
