@@ -119,6 +119,20 @@ func (a *App) Description() string {
 	return a.Annotations[aDescription]
 }
 
+func (a *App) Ready() bool {
+	if !a.Workload.GetStatus().Ready() {
+		return false
+	}
+
+	for _, dependency := range a.Dependencies {
+		if !dependency.GetStatus().Ready() {
+			return false
+		}
+	}
+
+	return true
+}
+
 func (c *Cluster) Apps(ctx context.Context) (AppSlice, error) {
 	workloads, err := c.workloads(ctx)
 	if err != nil {

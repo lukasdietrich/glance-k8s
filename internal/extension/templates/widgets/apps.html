@@ -1,6 +1,6 @@
 {{- define "widgets/apps" }}
 <ul class="dynamic-columns list-gap-20 list-with-separator">
-	{{- range . }}
+	{{- range  $app := . }}
 	<li class="docker-container flex items-center gap-15">
 		<div class="shrink-0" data-popover-type="html" data-popover-position="above" data-popover-offset="0.25" data-popover-margin="0.1rem" data-popover-max-width="400px">
 			{{- with .Icon }}
@@ -14,15 +14,22 @@
 			</div>
 		</div>
 		<div class="min-width-0 grow">
-			{{- $url := .Url }}
-			{{- if $url }}
-			<a class="color-highlight size-title-dynamic block text-truncate" href="{{ $url | url }}" {{ if not .SameTab }}target="_blank"{{ end }} rel="noreferrer">{{ .Name }}</a>
+			{{- with .Url }}
+			<a class="color-highlight size-title-dynamic block text-truncate" href="{{ . | url }}" {{ if not $app.SameTab }}target="_blank"{{ end }} rel="noreferrer">
+				{{ $app.Name }}
+			</a>
 			{{- else }}
-			<h3 class="color-highlight text-truncate size-title-dynamic">{{ .Name }}</h3>
+			<h3 class="color-highlight text-truncate size-title-dynamic">
+				{{ $app.Name }}
+			</h3>
 			{{- end }}
-			{{- if .Description }}
-			<div class="text-truncate">{{ .Description }}</div>
+			{{- with .Description }}
+			<div class="text-truncate">{{ . }}</div>
 			{{- end }}
+		</div>
+
+		<div class="margin-left-auto shrink-0">
+			{{ template "widgets/apps/state" . }}
 		</div>
 	</li>
 	{{- end }}
@@ -41,4 +48,12 @@
 	</div>
 	{{- end }}
 </div>
+{{- end }}
+
+{{- define "widgets/apps/state" }}
+{{- if .Ready }}
+{{ template "icons/check" dict "Class" "docker-container-status-icon color-positive" }}
+{{- else }}
+{{ template "icons/warn" dict "Class" "docker-container-status-icon color-negative" }}
+{{- end }}
 {{- end }}

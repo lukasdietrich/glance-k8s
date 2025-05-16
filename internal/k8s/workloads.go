@@ -47,6 +47,10 @@ type WorkloadStatus struct {
 	ReadyReplicas int32
 }
 
+func (s WorkloadStatus) Ready() bool {
+	return s.ReadyReplicas == s.Replicas
+}
+
 type deployment struct {
 	api.Deployment
 }
