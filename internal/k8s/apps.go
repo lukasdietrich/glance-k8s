@@ -8,6 +8,7 @@ import (
 	"net/url"
 	"regexp"
 	"sort"
+	"strings"
 
 	"github.com/samber/lo"
 	"golang.org/x/text/cases"
@@ -33,7 +34,8 @@ func (a AppSlice) Len() int {
 }
 
 func (a AppSlice) Less(i, j int) bool {
-	return a[i].Name() < a[j].Name()
+	iName, jName := a[i].Name(), a[j].Name()
+	return strings.ToLower(iName) < strings.ToLower(jName)
 }
 
 func (a AppSlice) Swap(i int, j int) {
