@@ -1,0 +1,19 @@
+{
+	"$schema": "https://docs.renovatebot.com/renovate-schema.json",
+
+	"customManagers": [
+		{
+			"customType": "regex",
+			"description": "Update glance",
+			"fileMatch": [
+				"/^charts\\/glance\\/Chart\\.yaml$/"
+			],
+			"matchStrings": [
+				"appVersion: '(?<currentValue>.*?)'\\s+",
+				"version: '(?<currentValue>.*?)'\\s+"
+			],
+			"depNameTemplate": "docker.io/glanceapp/glance",
+			"datasourceTemplate": "docker"
+		}
+	]
+}
