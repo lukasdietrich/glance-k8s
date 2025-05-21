@@ -114,5 +114,13 @@ tolerations: []
 
 affinity: {}
 
+# The contents of the `glance.yml` goes in here.
+# See https://github.com/glanceapp/glance/blob/main/docs/configuration.md
 glance:
-
+  # pages:
+  #   - name: News
+  #     columns:
+  #       - size: full
+  #         widgets:
+  #           - type: reddit
+  #             subreddit: news
