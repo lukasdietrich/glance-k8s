@@ -5,13 +5,13 @@
 			"customType": "regex",
 			"description": "Update glance",
 			"managerFilePatterns": [
-				"//^charts\\/glance\\/Chart\\.yaml$//"
+				"/^charts\\/glance\\/Chart\\.yaml$/"
 			],
 			"matchStrings": [
 				"appVersion: '(?<currentValue>.*?)'\\s+",
 				"version: '(?<currentValue>.*?)'\\s+"
 			],
-			"depNameTemplate": "docker.io/glanceapp/glance",
+			"depNameTemplate": "glanceapp/glance",
 			"datasourceTemplate": "docker"
 		}
 	]
