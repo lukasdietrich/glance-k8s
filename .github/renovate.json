@@ -8,8 +8,8 @@
 				"/^charts\\/glance\\/Chart\\.yaml$/"
 			],
 			"matchStrings": [
-				"appVersion: '(?<currentValue>.*?)'\\s+",
-				"version: '(?<currentValue>.*?)'\\s+"
+				"appVersion: \"(?<currentValue>.*?)\"\\s+",
+				"version: \"(?<currentValue>.*?)\"\\s+"
 			],
 			"depNameTemplate": "glanceapp/glance",
 			"datasourceTemplate": "docker"
