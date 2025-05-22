@@ -4,7 +4,7 @@ go 1.24.3
 
 require (
 	github.com/Masterminds/sprig/v3 v3.3.0
-	github.com/labstack/echo/v4 v4.13.3
+	github.com/labstack/echo/v4 v4.13.4
 	github.com/samber/lo v1.50.0
 	golang.org/x/text v0.25.0
 	k8s.io/api v0.33.1
