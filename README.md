@@ -34,9 +34,28 @@ widgets:
     cache: 1s
 
     parameters:
-      # List of regex patterns matched agains `namespace/name` to hide.
-      hide-pattern:
-        - kube-system/.*
+      # Parameters are sent to the extension as query parameters.
+      # Since there is no browser or proxy between glance and glance-k8s there _should_ not be a size limit for the parameters,
+      # apart from default buffer sizes.
+      # But keep that in mind, when supplying large strings.
+
+      # Show only workloads, that match an expression. 
+      # See: https://github.com/expr-lang/expr
+      #
+      # Environment:
+      #   namespace    Namespace of the workload
+      #   name         Name of the workload
+      #   annotations  Map of annotations
+      show-if: |
+        namespace != "kube-system" and
+        ("glance/hide" not in annotations || annotations["glance/hide"] != "true")
+
+      # You can also supply multiple expressions, which will evaluate to a logical conjunction (AND).
+      # show-if:
+      #   - |
+      #     namespace != "kube-system"
+      #   - |
+      #     ("glance/hide" not in annotations || annotations["glance/hide"] != "true")
 ```
 
 #### Customization / How it works

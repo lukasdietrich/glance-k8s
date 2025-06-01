@@ -10,6 +10,8 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/expr-lang/expr"
+	"github.com/expr-lang/expr/vm"
 	"github.com/samber/lo"
 	"golang.org/x/text/cases"
 	"golang.org/x/text/language"
@@ -138,6 +140,7 @@ func (a *App) Ready() bool {
 
 type AppsOptions struct {
 	HidePattern []string
+	ShowIf      []string
 }
 
 func (c *Cluster) Apps(ctx context.Context, opts AppsOptions) (AppSlice, error) {
@@ -191,12 +194,34 @@ func (c *Cluster) Apps(ctx context.Context, opts AppsOptions) (AppSlice, error) 
 }
 
 func filterWorkloads(workloads WorkloadSlice, opts AppsOptions) (WorkloadSlice, error) {
-	if len(opts.HidePattern) == 0 {
+	if len(opts.HidePattern) == 0 && len(opts.ShowIf) == 0 {
 		return workloads, nil
 	}
 
-	hidePatterns := make([]*regexp.Regexp, len(opts.HidePattern))
-	for i, pattern := range opts.HidePattern {
+	hidePatternFilter, err := buildHidePatternFilterFunc(opts.HidePattern)
+	if err != nil {
+		return nil, fmt.Errorf("could not build hide-pattern filter: %w", err)
+	}
+
+	showIfFilter, err := buildShowIfFilterFunc(opts.ShowIf)
+	if err != nil {
+		return nil, fmt.Errorf("could not build show-if filter: %w", err)
+	}
+
+	filter := func(workload Workload, _ int) bool {
+		return hidePatternFilter(workload) && showIfFilter(workload)
+	}
+
+	return lo.Filter(workloads, filter), nil
+}
+
+func buildHidePatternFilterFunc(patterns []string) (func(Workload) bool, error) {
+	if len(patterns) > 0 {
+		slog.Warn("hide-pattern is deprecated, use show-if instead")
+	}
+
+	hidePatterns := make([]*regexp.Regexp, len(patterns))
+	for i, pattern := range patterns {
 		if re, err := regexp.Compile(pattern); err != nil {
 			return nil, err
 		} else {
@@ -204,7 +229,7 @@ func filterWorkloads(workloads WorkloadSlice, opts AppsOptions) (WorkloadSlice, 
 		}
 	}
 
-	filter := func(workload Workload, _ int) bool {
+	filterFunc := func(workload Workload) bool {
 		fullname := resourceFullname(workload)
 		for _, hidePattern := range hidePatterns {
 			if hidePattern.MatchString(fullname) {
@@ -215,7 +240,47 @@ func filterWorkloads(workloads WorkloadSlice, opts AppsOptions) (WorkloadSlice, 
 		return true
 	}
 
-	return lo.Filter(workloads, filter), nil
+	return filterFunc, nil
+}
+
+func buildShowIfFilterFunc(expressions []string) (func(Workload) bool, error) {
+	programs := make([]*vm.Program, len(expressions))
+	for i, expression := range expressions {
+		program, err := expr.Compile(expression, expr.AsBool(), expr.WarnOnAny())
+		if err != nil {
+			return nil, err
+		}
+
+		programs[i] = program
+	}
+
+	filterFunc := func(workload Workload) bool {
+		env := struct {
+			Name        string            `expr:"name"`
+			Namespace   string            `expr:"namespace"`
+			Annotations map[string]string `expr:"annotations"`
+		}{
+			Name:        workload.GetName(),
+			Namespace:   workload.GetNamespace(),
+			Annotations: workload.GetAnnotations(),
+		}
+
+		for _, program := range programs {
+			output, err := expr.Run(program, &env)
+			if err != nil {
+				slog.Error("could not evaluate expression", slog.Any("err", err))
+				return false
+			}
+
+			if !output.(bool) {
+				return false
+			}
+		}
+
+		return true
+	}
+
+	return filterFunc, nil
 }
 
 func groupApps(workloads WorkloadSlice) AppSlice {

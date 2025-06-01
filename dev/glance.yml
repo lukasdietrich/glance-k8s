@@ -1,0 +1,26 @@
+server:
+  port: 9090
+
+pages:
+  - name: Test
+    columns:
+      - size: full
+        widgets:
+          - type: extension
+            url: http://localhost:8080/extension/nodes
+            allow-potentially-dangerous-html: true
+            cache: 1s
+
+          - type: extension
+            url: http://localhost:8080/extension/apps
+            allow-potentially-dangerous-html: true
+            cache: 1s
+
+            parameters:
+              # hide-pattern:
+              #   - kube-system/.*
+              show-if:
+                - |
+                  namespace matches ".*-app"
+                - |
+                  "glance/icon" in annotations and annotations["glance/icon"] startsWith "di:"

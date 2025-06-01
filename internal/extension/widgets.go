@@ -23,6 +23,7 @@ func apps(cluster *k8s.Cluster) echo.HandlerFunc {
 	return func(ctx echo.Context) error {
 		var req struct {
 			HidePattern []string `query:"hide-pattern"`
+			ShowIf      []string `query:"show-if"`
 		}
 
 		if err := ctx.Bind(&req); err != nil {
