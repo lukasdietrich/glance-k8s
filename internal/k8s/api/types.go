@@ -35,3 +35,4 @@ type DaemonSet = appsv1.DaemonSet
 type DaemonSetSpec = appsv1.DaemonSetSpec
 
 type LabelSelector = metav1.LabelSelector
+type PodTemplateSpec = corev1.PodTemplateSpec

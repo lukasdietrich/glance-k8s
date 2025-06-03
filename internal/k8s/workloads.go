@@ -41,6 +41,7 @@ type Workload interface {
 
 type WorkloadSpec struct {
 	Selector *api.LabelSelector
+	Template api.PodTemplateSpec
 }
 
 type WorkloadStatus struct {
@@ -63,6 +64,7 @@ func (d deployment) GetAnnotations() map[string]string {
 func (d deployment) GetSpec() WorkloadSpec {
 	return WorkloadSpec{
 		Selector: d.Spec.Selector,
+		Template: d.Spec.Template,
 	}
 }
 
@@ -84,6 +86,7 @@ func (s statefulSet) GetAnnotations() map[string]string {
 func (s statefulSet) GetSpec() WorkloadSpec {
 	return WorkloadSpec{
 		Selector: s.Spec.Selector,
+		Template: s.Spec.Template,
 	}
 }
 
@@ -105,6 +108,7 @@ func (d daemonSet) GetAnnotations() map[string]string {
 func (d daemonSet) GetSpec() WorkloadSpec {
 	return WorkloadSpec{
 		Selector: d.Spec.Selector,
+		Template: d.Spec.Template,
 	}
 }
 

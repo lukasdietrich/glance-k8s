@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"log/slog"
-	"maps"
 	"net/url"
 	"regexp"
 	"sort"
@@ -417,7 +416,16 @@ func isServiceForWorkload(service api.Service, workload Workload) bool {
 		return false
 	}
 
-	return maps.Equal(service.Spec.Selector, workload.GetSpec().Selector.MatchLabels)
+	labels := workload.GetSpec().Template.Labels
+	selector := service.Spec.Selector
+
+	for k, v := range selector {
+		if labels[k] != v {
+			return false
+		}
+	}
+
+	return true
 }
 
 func isIngressForService(ingress api.Ingress, service api.Service) bool {
