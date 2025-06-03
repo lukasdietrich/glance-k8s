@@ -17,10 +17,6 @@ pages:
             cache: 1s
 
             parameters:
-              # hide-pattern:
-              #   - kube-system/.*
               show-if:
                 - |
-                  namespace matches ".*-app"
-                - |
-                  "glance/icon" in annotations and annotations["glance/icon"] startsWith "di:"
+                  "glance/name" in annotations or "glance/parent" in annotations

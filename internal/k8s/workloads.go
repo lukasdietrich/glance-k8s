@@ -5,8 +5,9 @@ import (
 	"fmt"
 	"sort"
 
-	"github.com/lukasdietrich/glance-k8s/internal/k8s/api"
 	"github.com/samber/lo"
+
+	"github.com/lukasdietrich/glance-k8s/internal/k8s/api"
 )
 
 var (
@@ -55,6 +56,10 @@ type deployment struct {
 	api.Deployment
 }
 
+func (d deployment) GetAnnotations() map[string]string {
+	return lo.Assign(d.Spec.Template.GetAnnotations(), d.Deployment.GetAnnotations())
+}
+
 func (d deployment) GetSpec() WorkloadSpec {
 	return WorkloadSpec{
 		Selector: d.Spec.Selector,
@@ -72,6 +77,10 @@ type statefulSet struct {
 	api.StatefulSet
 }
 
+func (s statefulSet) GetAnnotations() map[string]string {
+	return lo.Assign(s.Spec.Template.GetAnnotations(), s.StatefulSet.GetAnnotations())
+}
+
 func (s statefulSet) GetSpec() WorkloadSpec {
 	return WorkloadSpec{
 		Selector: s.Spec.Selector,
@@ -87,6 +96,10 @@ func (s statefulSet) GetStatus() WorkloadStatus {
 
 type daemonSet struct {
 	api.DaemonSet
+}
+
+func (d daemonSet) GetAnnotations() map[string]string {
+	return lo.Assign(d.Spec.Template.GetAnnotations(), d.DaemonSet.GetAnnotations())
 }
 
 func (d daemonSet) GetSpec() WorkloadSpec {

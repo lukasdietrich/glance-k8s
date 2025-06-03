@@ -185,7 +185,7 @@ func (c *Cluster) Apps(ctx context.Context, opts AppsOptions) (AppSlice, error) 
 
 		if ingress, ok := findIngress(append(WorkloadSlice{app.Workload}, app.Dependencies...)...); ok {
 			app.Ingress = ingress
-			app.Annotations = lo.Assign(app.Workload.GetAnnotations(), ingress.GetAnnotations())
+			app.Annotations = lo.Assign(app.Annotations, ingress.GetAnnotations())
 		}
 	}
 
@@ -292,7 +292,9 @@ func groupApps(workloads WorkloadSlice) AppSlice {
 	)
 
 	for _, workload := range workloads {
-		if id, ok := workload.GetAnnotations()["glance/id"]; ok {
+		annoations := workload.GetAnnotations()
+
+		if id, ok := annoations[aId]; ok {
 			slog.Debug("workload is parent of group",
 				slog.String("namespace", workload.GetNamespace()),
 				slog.String("name", workload.GetName()),
@@ -304,7 +306,7 @@ func groupApps(workloads WorkloadSlice) AppSlice {
 			} else {
 				mappedApps[id] = &App{Workload: workload}
 			}
-		} else if parent, ok := workload.GetAnnotations()["glance/parent"]; ok {
+		} else if parent, ok := annoations[aParent]; ok {
 			slog.Debug("workload is dependency of group",
 				slog.String("namespace", workload.GetNamespace()),
 				slog.String("name", workload.GetName()),
