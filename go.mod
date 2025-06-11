@@ -6,7 +6,7 @@ require (
 	github.com/Masterminds/sprig/v3 v3.3.0
 	github.com/expr-lang/expr v1.17.5
 	github.com/labstack/echo/v4 v4.13.4
-	github.com/samber/lo v1.50.0
+	github.com/samber/lo v1.51.0
 	golang.org/x/text v0.26.0
 	k8s.io/api v0.33.1
 	k8s.io/apimachinery v0.33.1
