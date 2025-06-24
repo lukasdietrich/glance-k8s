@@ -14,5 +14,13 @@
 			"depNameTemplate": "glanceapp/glance",
 			"datasourceTemplate": "docker"
 		}
+	],
+	"packageRules": [
+		{
+			"groupName": "k8s.io",
+			"matchPackageNames": [
+				"k8s.io/**"
+			]
+		}
 	]
 }
