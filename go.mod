@@ -7,7 +7,7 @@ require (
 	github.com/expr-lang/expr v1.17.5
 	github.com/labstack/echo/v4 v4.13.4
 	github.com/samber/lo v1.51.0
-	golang.org/x/text v0.26.0
+	golang.org/x/text v0.27.0
 	k8s.io/api v0.33.2
 	k8s.io/apimachinery v0.33.2
 	k8s.io/client-go v0.33.2
