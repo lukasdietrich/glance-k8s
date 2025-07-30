@@ -148,10 +148,6 @@ func (c *Cluster) Apps(ctx context.Context, opts AppsOptions) (AppSlice, error) 
 		return nil, fmt.Errorf("could not fetch workloads: %w", err)
 	}
 
-	if workloads, err = filterWorkloads(workloads, opts); err != nil {
-		return nil, fmt.Errorf("could not filter workloads: %w", err)
-	}
-
 	services, err := c.client.Services(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("could not fetch services: %w", err)
@@ -188,13 +184,17 @@ func (c *Cluster) Apps(ctx context.Context, opts AppsOptions) (AppSlice, error) 
 		}
 	}
 
+	if apps, err = filterApps(apps, opts); err != nil {
+		return nil, fmt.Errorf("could not filter apps: %w", err)
+	}
+
 	sort.Stable(apps)
 	return apps, nil
 }
 
-func filterWorkloads(workloads WorkloadSlice, opts AppsOptions) (WorkloadSlice, error) {
+func filterApps(apps AppSlice, opts AppsOptions) (AppSlice, error) {
 	if len(opts.HidePattern) == 0 && len(opts.ShowIf) == 0 {
-		return workloads, nil
+		return apps, nil
 	}
 
 	hidePatternFilter, err := buildHidePatternFilterFunc(opts.HidePattern)
@@ -207,14 +207,14 @@ func filterWorkloads(workloads WorkloadSlice, opts AppsOptions) (WorkloadSlice, 
 		return nil, fmt.Errorf("could not build show-if filter: %w", err)
 	}
 
-	filter := func(workload Workload, _ int) bool {
-		return hidePatternFilter(workload) && showIfFilter(workload)
+	filter := func(app *App, _ int) bool {
+		return hidePatternFilter(app) && showIfFilter(app)
 	}
 
-	return lo.Filter(workloads, filter), nil
+	return lo.Filter(apps, filter), nil
 }
 
-func buildHidePatternFilterFunc(patterns []string) (func(Workload) bool, error) {
+func buildHidePatternFilterFunc(patterns []string) (func(*App) bool, error) {
 	if len(patterns) > 0 {
 		slog.Warn("hide-pattern is deprecated, use show-if instead")
 	}
@@ -228,8 +228,8 @@ func buildHidePatternFilterFunc(patterns []string) (func(Workload) bool, error) 
 		}
 	}
 
-	filterFunc := func(workload Workload) bool {
-		fullname := resourceFullname(workload)
+	filterFunc := func(app *App) bool {
+		fullname := resourceFullname(app.Workload)
 		for _, hidePattern := range hidePatterns {
 			if hidePattern.MatchString(fullname) {
 				return false
@@ -242,7 +242,7 @@ func buildHidePatternFilterFunc(patterns []string) (func(Workload) bool, error) 
 	return filterFunc, nil
 }
 
-func buildShowIfFilterFunc(expressions []string) (func(Workload) bool, error) {
+func buildShowIfFilterFunc(expressions []string) (func(*App) bool, error) {
 	programs := make([]*vm.Program, len(expressions))
 	for i, expression := range expressions {
 		program, err := expr.Compile(expression, expr.AsBool(), expr.WarnOnAny())
@@ -253,15 +253,15 @@ func buildShowIfFilterFunc(expressions []string) (func(Workload) bool, error) {
 		programs[i] = program
 	}
 
-	filterFunc := func(workload Workload) bool {
+	filterFunc := func(app *App) bool {
 		env := struct {
 			Name        string            `expr:"name"`
 			Namespace   string            `expr:"namespace"`
 			Annotations map[string]string `expr:"annotations"`
 		}{
-			Name:        workload.GetName(),
-			Namespace:   workload.GetNamespace(),
-			Annotations: workload.GetAnnotations(),
+			Name:        app.Workload.GetName(),
+			Namespace:   app.Workload.GetNamespace(),
+			Annotations: app.Annotations,
 		}
 
 		for _, program := range programs {
