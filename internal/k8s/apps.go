@@ -46,6 +46,7 @@ func (a AppSlice) Swap(i int, j int) {
 type App struct {
 	Annotations  map[string]string
 	Ingress      *api.Ingress
+	HTTPRoute    *api.HTTPRoute
 	Workload     Workload
 	Dependencies WorkloadSlice
 }
@@ -76,6 +77,11 @@ func (a *App) Url() string {
 		return url.String()
 	}
 
+	if a.HTTPRoute != nil {
+		url := buildHTTPRouteUrl(a.HTTPRoute)
+		return url.String()
+	}
+
 	return ""
 }
 
@@ -84,6 +90,16 @@ func buildIngressUrl(ingress *api.Ingress) url.URL {
 
 	return url.URL{
 		Scheme: ingressScheme(ingress),
+		Host:   host,
+		Path:   path,
+	}
+}
+
+func buildHTTPRouteUrl(httpRoute *api.HTTPRoute) url.URL {
+	host, path := httpRouteHostPath(httpRoute)
+
+	return url.URL{
+		Scheme: httpRouteScheme(httpRoute),
 		Host:   host,
 		Path:   path,
 	}
@@ -113,6 +129,30 @@ func ingressHostPath(ingress *api.Ingress) (host, path string) {
 	}
 
 	return "", ""
+}
+
+func httpRouteScheme(httpRoute *api.HTTPRoute) string {
+	// HTTPRoute typically uses https if attached to a secure Gateway
+	// For now, default to https - could be enhanced to check parent Gateway
+	return "https"
+}
+
+func httpRouteHostPath(httpRoute *api.HTTPRoute) (host, path string) {
+	if len(httpRoute.Spec.Hostnames) > 0 {
+		host = string(httpRoute.Spec.Hostnames[0])
+	}
+
+	if len(httpRoute.Spec.Rules) > 0 {
+		rule := httpRoute.Spec.Rules[0]
+		if len(rule.Matches) > 0 {
+			match := rule.Matches[0]
+			if match.Path != nil {
+				path = *match.Path.Value
+			}
+		}
+	}
+
+	return host, path
 }
 
 func (a *App) SameTab() bool {
@@ -158,7 +198,12 @@ func (c *Cluster) Apps(ctx context.Context, opts AppsOptions) (AppSlice, error) 
 		return nil, fmt.Errorf("could not fetch ingresses: %w", err)
 	}
 
-	findIngress := makeIngressFinder(workloads, services, ingresses)
+	httpRoutes, err := c.client.HTTPRoutes(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("could not fetch httpRoutes: %w", err)
+	}
+
+	findIngress := makeIngressFinder(workloads, services, ingresses, httpRoutes)
 
 	apps := groupApps(workloads)
 	for _, app := range apps {
@@ -178,9 +223,16 @@ func (c *Cluster) Apps(ctx context.Context, opts AppsOptions) (AppSlice, error) 
 
 		app.Annotations = app.Workload.GetAnnotations()
 
-		if ingress, ok := findIngress(append(WorkloadSlice{app.Workload}, app.Dependencies...)...); ok {
+		if ingress, httpRoute, ok := findIngress(append(WorkloadSlice{app.Workload}, app.Dependencies...)...); ok {
 			app.Ingress = ingress
-			app.Annotations = lo.Assign(app.Annotations, ingress.GetAnnotations())
+			app.HTTPRoute = httpRoute
+
+			if ingress != nil {
+				app.Annotations = lo.Assign(app.Annotations, ingress.GetAnnotations())
+			}
+			if httpRoute != nil {
+				app.Annotations = lo.Assign(app.Annotations, httpRoute.GetAnnotations())
+			}
 		}
 	}
 
@@ -291,9 +343,9 @@ func groupApps(workloads WorkloadSlice) AppSlice {
 	)
 
 	for _, workload := range workloads {
-		annoations := workload.GetAnnotations()
+		annotations := workload.GetAnnotations()
 
-		if id, ok := annoations[aId]; ok {
+		if id, ok := annotations[aId]; ok {
 			slog.Debug("workload is parent of group",
 				slog.String("namespace", workload.GetNamespace()),
 				slog.String("name", workload.GetName()),
@@ -305,7 +357,7 @@ func groupApps(workloads WorkloadSlice) AppSlice {
 			} else {
 				mappedApps[id] = &App{Workload: workload}
 			}
-		} else if parent, ok := annoations[aParent]; ok {
+		} else if parent, ok := annotations[aParent]; ok {
 			slog.Debug("workload is dependency of group",
 				slog.String("namespace", workload.GetNamespace()),
 				slog.String("name", workload.GetName()),
@@ -336,11 +388,13 @@ func groupApps(workloads WorkloadSlice) AppSlice {
 	return apps
 }
 
-type ingressFinderFunc func(workload ...Workload) (*api.Ingress, bool)
+type ingressFinderFunc func(workload ...Workload) (*api.Ingress, *api.HTTPRoute, bool)
 
-func makeIngressFinder(workloads WorkloadSlice, services []api.Service, ingresses []api.Ingress) ingressFinderFunc {
+func makeIngressFinder(workloads WorkloadSlice, services []api.Service, ingresses []api.Ingress, httpRoutes []api.HTTPRoute) ingressFinderFunc {
 	serviceToIngressMap := make(map[string]api.Ingress)
+	serviceToHTTPRouteMap := make(map[string]api.HTTPRoute)
 	workloadToIngressMap := make(map[string]api.Ingress)
+	workloadToHTTPRouteMap := make(map[string]api.HTTPRoute)
 
 	for _, service := range services {
 		for _, ingress := range ingresses {
@@ -357,6 +411,25 @@ func makeIngressFinder(workloads WorkloadSlice, services []api.Service, ingresse
 				)
 
 				serviceToIngressMap[resourceFullname(&service)] = ingress
+			}
+		}
+	}
+
+	for _, service := range services {
+		for _, httpRoute := range httpRoutes {
+			if isHTTPRouteForService(httpRoute, service) {
+				slog.Debug("found httpRoute for service",
+					slog.Group("httpRoute",
+						slog.String("namespace", httpRoute.GetNamespace()),
+						slog.String("name", httpRoute.GetName()),
+					),
+					slog.Group("service",
+						slog.String("namespace", service.GetNamespace()),
+						slog.String("name", service.GetName()),
+					),
+				)
+
+				serviceToHTTPRouteMap[resourceFullname(&service)] = httpRoute
 			}
 		}
 	}
@@ -389,18 +462,37 @@ func makeIngressFinder(workloads WorkloadSlice, services []api.Service, ingresse
 
 					workloadToIngressMap[resourceFullname(workload)] = ingress
 				}
+
+				if httproute, ok := serviceToHTTPRouteMap[resourceFullname(&service)]; ok {
+					slog.Debug("found httproute for workload",
+						slog.Group("httproute",
+							slog.String("namespace", httproute.GetNamespace()),
+							slog.String("name", httproute.GetName()),
+						),
+						slog.Group("workload",
+							slog.String("namespace", workload.GetNamespace()),
+							slog.String("name", workload.GetName()),
+						),
+					)
+
+					workloadToHTTPRouteMap[resourceFullname(workload)] = httproute
+				}
 			}
 		}
 	}
 
-	return func(workloads ...Workload) (*api.Ingress, bool) {
+	return func(workloads ...Workload) (*api.Ingress, *api.HTTPRoute, bool) {
 		for _, workload := range workloads {
 			if ingress, ok := workloadToIngressMap[resourceFullname(workload)]; ok {
-				return &ingress, true
+				return &ingress, nil, true
+			}
+
+			if httpRoute, ok := workloadToHTTPRouteMap[resourceFullname(workload)]; ok {
+				return nil, &httpRoute, true
 			}
 		}
 
-		return nil, false
+		return nil, nil, false
 	}
 }
 
@@ -443,6 +535,22 @@ func isIngressForService(ingress api.Ingress, service api.Service) bool {
 				if path.Backend.Service.Name == service.Name {
 					return true
 				}
+			}
+		}
+	}
+
+	return false
+}
+
+func isHTTPRouteForService(httpRoute api.HTTPRoute, service api.Service) bool {
+	if httpRoute.GetNamespace() != service.GetNamespace() {
+		return false
+	}
+
+	for _, rules := range httpRoute.Spec.Rules {
+		for _, backendRef := range rules.BackendRefs {
+			if string(backendRef.Name) == service.Name {
+				return true
 			}
 		}
 	}
