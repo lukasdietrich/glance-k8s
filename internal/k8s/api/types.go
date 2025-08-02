@@ -6,6 +6,7 @@ import (
 	networkingv1 "k8s.io/api/networking/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	metricsv1beta1 "k8s.io/metrics/pkg/apis/metrics/v1beta1"
+	gatewayapiv1 "sigs.k8s.io/gateway-api/apis/v1"
 )
 
 const (
@@ -24,6 +25,7 @@ type NodeMetrics = metricsv1beta1.NodeMetrics
 type Ingress = networkingv1.Ingress
 type HTTPIngressPath = networkingv1.HTTPIngressPath
 type Service = corev1.Service
+type HTTPRoute = gatewayapiv1.HTTPRoute
 
 type Deployment = appsv1.Deployment
 type DeploymentSpec = appsv1.DeploymentSpec
