@@ -1,11 +1,13 @@
 #!/usr/bin/env sh
 
-SCRIPT_DIR="$(dirname "$(readlink -f "$0")")"
-
 set -e
+
+SCRIPT_DIR="$(dirname "$(readlink -f "$0")")"
+PODMAN=$(which "podman" 2> /dev/null || which "docker")
+
 set -x
 
-docker run \
+${PODMAN} run \
 	--pull=always \
 	--rm \
 	--network=host \
