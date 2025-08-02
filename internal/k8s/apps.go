@@ -131,7 +131,7 @@ func ingressHostPath(ingress *api.Ingress) (host, path string) {
 	return "", ""
 }
 
-func httpRouteScheme(httpRoute *api.HTTPRoute) string {
+func httpRouteScheme(*api.HTTPRoute) string {
 	// HTTPRoute typically uses https if attached to a secure Gateway
 	// For now, default to https - could be enhanced to check parent Gateway
 	return "https"

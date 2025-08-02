@@ -2,8 +2,6 @@ package api
 
 import (
 	"context"
-
-	gatewayapiv1 "sigs.k8s.io/gateway-api/apis/v1"
 )
 
 func (c *Client) Services(ctx context.Context) ([]Service, error) {
@@ -29,10 +27,10 @@ func (c *Client) Ingresses(ctx context.Context) ([]Ingress, error) {
 		})
 }
 
-func (c *Client) HTTPRoutes(ctx context.Context) ([]gatewayapiv1.HTTPRoute, error) {
+func (c *Client) HTTPRoutes(ctx context.Context) ([]HTTPRoute, error) {
 	return fetchContinue(ctx,
-		func(ctx context.Context, opts listOptions) ([]gatewayapiv1.HTTPRoute, string, error) {
-			httpRoutes, err := c.gatewayClientset.GatewayV1().HTTPRoutes("").List(ctx, opts)
+		func(ctx context.Context, opts listOptions) ([]HTTPRoute, string, error) {
+			httpRoutes, err := c.gateway.GatewayV1().HTTPRoutes("").List(ctx, opts)
 			if err != nil {
 				return nil, "", err
 			}

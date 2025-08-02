@@ -14,9 +14,9 @@ import (
 )
 
 type Client struct {
-	kube             *kubernetes.Clientset
-	metrics          *metricsv.Clientset
-	gatewayClientset *gatewayclient.Clientset
+	kube    *kubernetes.Clientset
+	metrics *metricsv.Clientset
+	gateway *gatewayclient.Clientset
 }
 
 func Connect() (*Client, error) {
@@ -40,9 +40,9 @@ func Connect() (*Client, error) {
 	}
 
 	return &Client{
-		kube:             kube,
-		metrics:          metrics,
-		gatewayClientset: gatewayClientset,
+		kube:    kube,
+		metrics: metrics,
+		gateway: gatewayClientset,
 	}, nil
 }
 
