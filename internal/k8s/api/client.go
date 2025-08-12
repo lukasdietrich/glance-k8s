@@ -10,11 +10,13 @@ import (
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
 	metricsv "k8s.io/metrics/pkg/client/clientset/versioned"
+	gatewayv "sigs.k8s.io/gateway-api/pkg/client/clientset/versioned"
 )
 
 type Client struct {
 	kube    *kubernetes.Clientset
 	metrics *metricsv.Clientset
+	gateway *gatewayv.Clientset
 }
 
 func Connect() (*Client, error) {
@@ -33,9 +35,15 @@ func Connect() (*Client, error) {
 		return nil, fmt.Errorf("could not create metrics client: %w", err)
 	}
 
+	gateway, err := gatewayv.NewForConfig(config)
+	if err != nil {
+		return nil, fmt.Errorf("could not create gatewayClientset client: %w", err)
+	}
+
 	return &Client{
 		kube:    kube,
 		metrics: metrics,
+		gateway: gateway,
 	}, nil
 }
 
