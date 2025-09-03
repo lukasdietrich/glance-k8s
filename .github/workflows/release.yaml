@@ -33,6 +33,7 @@ jobs:
         id: build-image
         with:
           tags: ${{ steps.meta.outputs.tags }}
+          archs: amd64, arm64
           containerfiles: |
             ./Containerfile
 
