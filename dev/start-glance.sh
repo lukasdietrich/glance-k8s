@@ -1,12 +1,14 @@
 #!/usr/bin/env sh
 
-SCRIPT_DIR="$(dirname "$(readlink -f "$0")")"
-
 set -e
+
+SCRIPT_DIR="$(dirname "$(readlink -f "$0")")"
+PODMAN=$(which "podman" 2> /dev/null || which "docker")
+
 set -x
 
-podman run \
-	--pull=newer \
+${PODMAN} run \
+	--pull=always \
 	--rm \
 	--network=host \
 	--volume "${SCRIPT_DIR}/glance.yml:/app/config/glance.yml:ro" \

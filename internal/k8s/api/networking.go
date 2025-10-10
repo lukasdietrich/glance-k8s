@@ -26,3 +26,14 @@ func (c *Client) Ingresses(ctx context.Context) ([]Ingress, error) {
 			return ingressList.Items, ingressList.Continue, nil
 		})
 }
+
+func (c *Client) HTTPRoutes(ctx context.Context) ([]HTTPRoute, error) {
+	return fetchContinue(ctx,
+		func(ctx context.Context, opts listOptions) ([]HTTPRoute, string, error) {
+			httpRoutes, err := c.gateway.GatewayV1().HTTPRoutes("").List(ctx, opts)
+			if err != nil {
+				return nil, "", err
+			}
+			return httpRoutes.Items, httpRoutes.Continue, nil
+		})
+}
