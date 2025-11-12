@@ -200,7 +200,7 @@ func (c *Cluster) Apps(ctx context.Context, opts AppsOptions) (AppSlice, error) 
 
 	httpRoutes, err := c.client.HTTPRoutes(ctx)
 	if err != nil {
-		return nil, fmt.Errorf("could not fetch httpRoutes: %w", err)
+		slog.Warn("could not fetch httpRoutes", slog.Any("err", err))
 	}
 
 	findIngress := makeIngressFinder(workloads, services, ingresses, httpRoutes)
