@@ -1,6 +1,6 @@
 module github.com/lukasdietrich/glance-k8s
 
-go 1.24.3
+go 1.25.0
 
 require (
 	github.com/Masterminds/sprig/v3 v3.3.0
@@ -8,10 +8,10 @@ require (
 	github.com/labstack/echo/v4 v4.15.0
 	github.com/samber/lo v1.52.0
 	golang.org/x/text v0.32.0
-	k8s.io/api v0.34.3
-	k8s.io/apimachinery v0.34.3
-	k8s.io/client-go v0.34.3
-	k8s.io/metrics v0.34.3
+	k8s.io/api v0.35.0
+	k8s.io/apimachinery v0.35.0
+	k8s.io/client-go v0.35.0
+	k8s.io/metrics v0.35.0
 	sigs.k8s.io/gateway-api v1.4.1
 )
 
