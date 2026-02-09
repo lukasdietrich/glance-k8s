@@ -3,7 +3,7 @@ package extension
 import (
 	"strconv"
 
-	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v5"
 )
 
 const (
@@ -26,7 +26,7 @@ func widgetTitle(title string) echo.MiddlewareFunc {
 
 func makeWidgetMiddleware(name, value string) echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
-		return func(ctx echo.Context) error {
+		return func(ctx *echo.Context) error {
 			ctx.Response().Header().Add(name, value)
 			return next(ctx)
 		}

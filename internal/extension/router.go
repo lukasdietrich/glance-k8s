@@ -4,8 +4,8 @@ import (
 	"log/slog"
 	"net/http"
 
-	"github.com/labstack/echo/v4"
-	"github.com/labstack/echo/v4/middleware"
+	"github.com/labstack/echo/v5"
+	"github.com/labstack/echo/v5/middleware"
 
 	"github.com/lukasdietrich/glance-k8s/internal/k8s"
 )
@@ -33,7 +33,7 @@ func New(cluster *k8s.Cluster) http.Handler {
 
 func logError() echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
-		return func(ctx echo.Context) error {
+		return func(ctx *echo.Context) error {
 			err := next(ctx)
 			if err != nil {
 				slog.Error("error during request",
@@ -48,7 +48,7 @@ func logError() echo.MiddlewareFunc {
 }
 
 func health() echo.HandlerFunc {
-	return func(ctx echo.Context) error {
+	return func(ctx *echo.Context) error {
 		return ctx.NoContent(http.StatusOK)
 	}
 }

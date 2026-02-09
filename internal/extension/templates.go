@@ -7,7 +7,7 @@ import (
 	"regexp"
 
 	"github.com/Masterminds/sprig/v3"
-	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v5"
 	"k8s.io/apimachinery/pkg/api/resource"
 )
 
