@@ -8,10 +8,10 @@ require (
 	github.com/labstack/echo/v5 v5.0.3
 	github.com/samber/lo v1.52.0
 	golang.org/x/text v0.34.0
-	k8s.io/api v0.35.0
-	k8s.io/apimachinery v0.35.0
-	k8s.io/client-go v0.35.0
-	k8s.io/metrics v0.35.0
+	k8s.io/api v0.35.1
+	k8s.io/apimachinery v0.35.1
+	k8s.io/client-go v0.35.1
+	k8s.io/metrics v0.35.1
 	sigs.k8s.io/gateway-api v1.4.1
 )
 
