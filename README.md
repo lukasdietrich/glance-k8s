@@ -109,6 +109,17 @@ metadata:
 ```
 
 
+## Configuration
+
+The extension is configured through environment variables:
+
+| Variable | Default | Description |
+| --- | --- | --- |
+| `GLANCE_DEBUG` | _unset_ | When set to any non-empty value, enables debug-level logging. |
+| `GLANCE_KUBE_CONFIG` | `$HOME/.kube/config` | Path to a kubeconfig file. Ignored when running in-cluster. |
+| `GLANCE_KUBE_API_QPS` | client-go default (5) | Raises the client-go QPS limit when talking to the kube-apiserver. Useful when a dashboard with many widgets fans out enough parallel list calls to exhaust the default rate limit (`client-side throttling, not priority and fairness` warnings in the logs). |
+| `GLANCE_KUBE_API_BURST` | client-go default (10) | Raises the client-go burst limit. Should generally be set together with `GLANCE_KUBE_API_QPS`. |
+
 ## Installation
 
 Glance itself provides a container image, but no official helm chart yet.

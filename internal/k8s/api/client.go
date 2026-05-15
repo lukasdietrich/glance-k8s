@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log/slog"
 	"os"
+	"strconv"
 
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
@@ -24,6 +25,8 @@ func Connect() (*Client, error) {
 	if err != nil {
 		return nil, fmt.Errorf("could not read kubernetes config: %w", err)
 	}
+
+	applyRateLimitOverrides(config)
 
 	kube, err := kubernetes.NewForConfig(config)
 	if err != nil {
@@ -70,6 +73,30 @@ func findKubernetesConfigFilename() string {
 	}
 
 	return os.ExpandEnv("${HOME}/.kube/config")
+}
+
+// applyRateLimitOverrides lets operators raise client-go's default
+// rate limit (5 QPS / 10 burst) when a dashboard fans out enough
+// parallel widget calls to exhaust it. Leaves the defaults in place
+// when the env vars are unset or malformed.
+func applyRateLimitOverrides(config *rest.Config) {
+	if v := os.Getenv("GLANCE_KUBE_API_QPS"); v != "" {
+		if qps, err := strconv.ParseFloat(v, 32); err == nil && qps > 0 {
+			config.QPS = float32(qps)
+			slog.Debug("overriding kube api qps", slog.Float64("qps", qps))
+		} else {
+			slog.Warn("ignoring invalid GLANCE_KUBE_API_QPS", slog.String("value", v))
+		}
+	}
+
+	if v := os.Getenv("GLANCE_KUBE_API_BURST"); v != "" {
+		if burst, err := strconv.Atoi(v); err == nil && burst > 0 {
+			config.Burst = burst
+			slog.Debug("overriding kube api burst", slog.Int("burst", burst))
+		} else {
+			slog.Warn("ignoring invalid GLANCE_KUBE_API_BURST", slog.String("value", v))
+		}
+	}
 }
 
 type fetchFunc[Item any] func(context.Context, listOptions) ([]Item, string, error)
