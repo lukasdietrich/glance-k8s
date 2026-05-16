@@ -17,6 +17,7 @@ type Client struct {
 	kube    *kubernetes.Clientset
 	metrics *metricsv.Clientset
 	gateway *gatewayv.Clientset
+	cache   *listCache
 }
 
 func Connect() (*Client, error) {
@@ -44,6 +45,7 @@ func Connect() (*Client, error) {
 		kube:    kube,
 		metrics: metrics,
 		gateway: gateway,
+		cache:   newListCache(readCacheTTL()),
 	}, nil
 }
 

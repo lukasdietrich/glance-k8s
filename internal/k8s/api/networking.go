@@ -5,6 +5,10 @@ import (
 )
 
 func (c *Client) Services(ctx context.Context) ([]Service, error) {
+	return cachedList(ctx, c.cache, "services", c.listServices)
+}
+
+func (c *Client) listServices(ctx context.Context) ([]Service, error) {
 	return fetchContinue(ctx,
 		func(ctx context.Context, opts listOptions) ([]Service, string, error) {
 			serviceList, err := c.kube.CoreV1().Services("").List(ctx, opts)
@@ -17,6 +21,10 @@ func (c *Client) Services(ctx context.Context) ([]Service, error) {
 }
 
 func (c *Client) Ingresses(ctx context.Context) ([]Ingress, error) {
+	return cachedList(ctx, c.cache, "ingresses", c.listIngresses)
+}
+
+func (c *Client) listIngresses(ctx context.Context) ([]Ingress, error) {
 	return fetchContinue(ctx,
 		func(ctx context.Context, opts listOptions) ([]Ingress, string, error) {
 			ingressList, err := c.kube.NetworkingV1().Ingresses("").List(ctx, opts)
@@ -28,6 +36,10 @@ func (c *Client) Ingresses(ctx context.Context) ([]Ingress, error) {
 }
 
 func (c *Client) HTTPRoutes(ctx context.Context) ([]HTTPRoute, error) {
+	return cachedList(ctx, c.cache, "httproutes", c.listHTTPRoutes)
+}
+
+func (c *Client) listHTTPRoutes(ctx context.Context) ([]HTTPRoute, error) {
 	return fetchContinue(ctx,
 		func(ctx context.Context, opts listOptions) ([]HTTPRoute, string, error) {
 			httpRoutes, err := c.gateway.GatewayV1().HTTPRoutes("").List(ctx, opts)
