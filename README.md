@@ -117,15 +117,12 @@ The extension is configured via environment variables. All variables are optiona
 |---|---|---|
 | `GLANCE_DEBUG` | _(unset)_ | When non-empty, enables debug-level logging. |
 | `GLANCE_KUBE_CONFIG` | `${HOME}/.kube/config` | Path to a kubeconfig file. Only used when no in-cluster config is available. |
-| `GLANCE_KUBE_CACHE_TTL` | `5s` | TTL for the in-process read-through cache of cluster-wide `List()` results. `0` disables the cache. Accepts any Go [duration](https://pkg.go.dev/time#ParseDuration) string (e.g. `5s`, `500ms`, `1m`). |
 
 ### About the response cache
 
-A single dashboard pageload causes Glance to fire one HTTP request per widget to glance-k8s. With many per-category widgets (each filtering on a distinct `glance/id`), the requests fan out in parallel and each one previously triggered fresh cluster-wide `List()` calls for deployments, statefulsets, daemonsets, services, ingresses, and HTTPRoutes — which on larger clusters exhausts client-go's default 5 QPS limit and produces multi-second cold-loads.
+A single dashboard pageload causes Glance to fire one HTTP request per widget to glance-k8s. With many per-category widgets (each filtering on a distinct `glance/id`), the requests fan out in parallel and each one would otherwise trigger fresh cluster-wide `List()` calls for deployments, statefulsets, daemonsets, services, ingresses, and HTTPRoutes — which on larger clusters exhausts client-go's default 5 QPS limit and produces multi-second cold-loads.
 
-With the cache enabled (the default), repeated `List()` calls for the same resource within the TTL window are served from memory, and concurrent callers for the same key are collapsed onto a single in-flight fetch via [singleflight](https://pkg.go.dev/golang.org/x/sync/singleflight). Errors are not cached, so a transient apiserver failure does not lock the cache for the full TTL.
-
-The default TTL of `5s` is short enough that dashboard reloads continue to reflect cluster changes quickly, while long enough that all widgets on one page share a single set of underlying `List()` calls.
+To avoid this, cluster-wide `List()` responses are cached in-process for a short, fixed TTL. Concurrent callers for the same resource are collapsed onto a single in-flight fetch via [singleflight](https://pkg.go.dev/golang.org/x/sync/singleflight), and errors are not cached so a transient apiserver failure does not lock the cache for the full TTL.
 
 ## Installation
 

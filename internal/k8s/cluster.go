@@ -3,7 +3,7 @@ package k8s
 import "github.com/lukasdietrich/glance-k8s/internal/k8s/api"
 
 type Cluster struct {
-	client *api.Client
+	client apiClient
 }
 
 func Connect() (*Cluster, error) {
@@ -12,5 +12,5 @@ func Connect() (*Cluster, error) {
 		return nil, err
 	}
 
-	return &Cluster{client: client}, nil
+	return &Cluster{client: newCachedClient(client)}, nil
 }

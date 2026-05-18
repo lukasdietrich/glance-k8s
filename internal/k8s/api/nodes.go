@@ -5,10 +5,6 @@ import (
 )
 
 func (c *Client) Nodes(ctx context.Context) ([]Node, error) {
-	return cachedList(ctx, c.cache, "nodes", c.listNodes)
-}
-
-func (c *Client) listNodes(ctx context.Context) ([]Node, error) {
 	return fetchContinue(ctx,
 		func(ctx context.Context, opts listOptions) ([]Node, string, error) {
 			nodesList, err := c.kube.CoreV1().Nodes().List(ctx, opts)
@@ -21,10 +17,6 @@ func (c *Client) listNodes(ctx context.Context) ([]Node, error) {
 }
 
 func (c *Client) NodeMetrics(ctx context.Context) ([]NodeMetrics, error) {
-	return cachedList(ctx, c.cache, "nodemetrics", c.listNodeMetrics)
-}
-
-func (c *Client) listNodeMetrics(ctx context.Context) ([]NodeMetrics, error) {
 	return fetchContinue(ctx,
 		func(ctx context.Context, opts listOptions) ([]NodeMetrics, string, error) {
 			metricsList, err := c.metrics.MetricsV1beta1().NodeMetricses().List(ctx, opts)
