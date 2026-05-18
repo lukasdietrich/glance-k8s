@@ -109,6 +109,21 @@ metadata:
 ```
 
 
+## Configuration
+
+The extension is configured via environment variables. All variables are optional.
+
+| Variable | Default | Description |
+|---|---|---|
+| `GLANCE_DEBUG` | _(unset)_ | When non-empty, enables debug-level logging. |
+| `GLANCE_KUBE_CONFIG` | `${HOME}/.kube/config` | Path to a kubeconfig file. Only used when no in-cluster config is available. |
+
+### About the response cache
+
+A single dashboard pageload causes Glance to fire one HTTP request per widget to glance-k8s. With many per-category widgets (each filtering on a distinct `glance/id`), the requests fan out in parallel and each one would otherwise trigger fresh cluster-wide `List()` calls for deployments, statefulsets, daemonsets, services, ingresses, and HTTPRoutes — which on larger clusters exhausts client-go's default 5 QPS limit and produces multi-second cold-loads.
+
+To avoid this, cluster-wide `List()` responses are cached in-process for a short, fixed TTL. Concurrent callers for the same resource are collapsed onto a single in-flight fetch via [singleflight](https://pkg.go.dev/golang.org/x/sync/singleflight), and errors are not cached so a transient apiserver failure does not lock the cache for the full TTL.
+
 ## Installation
 
 Glance itself provides a container image, but no official helm chart yet.
