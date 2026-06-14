@@ -25,16 +25,10 @@
       matchDepNames: ["glanceapp/glance"],
       bumpVersions: [
         {
-          name: "Updating chart version build metadata",
-          filePatterns: ["/^charts\\/glance\\/Chart\\.yaml$/"],
-          bumpType: "sync",
-          matchStrings: ['version: "[^"+]*\\+glance-(?<currentValue>[^"]+)"'],
-        },
-        {
           name: "Bump chart version",
           filePatterns: ["/^charts\\/glance\\/Chart\\.yaml$/"],
           bumpType: "{{#if isPatch}}patch{{else}}minor{{/if}}",
-          matchStrings: ['version: "(?<currentValue>[^"+])+glance-[^"]+"'],
+          matchStrings: ['version: "(?<currentValue>[^"]+)"'],
         },
       ],
     },
