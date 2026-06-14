@@ -1,0 +1,42 @@
+{
+  $schema: "https://docs.renovatebot.com/renovate-schema.json",
+
+  customManagers: [
+    {
+      customType: "regex",
+      description: "Update glance",
+      managerFilePatterns: ["/^charts\\/glance\\/Chart\\.yaml$/"],
+      matchStrings: ['appVersion: "(?<currentValue>[^"]+)"'],
+      depNameTemplate: "glanceapp/glance",
+      datasourceTemplate: "docker",
+    },
+  ],
+
+  packageRules: [
+    {
+      matchDatasources: ["go"],
+      postUpdateOptions: ["gomodTidy", "gomodUpdateImportPaths"],
+    },
+    {
+      groupName: "k8s.io",
+      matchPackageNames: ["k8s.io/**"],
+    },
+    {
+      matchDepNames: ["glanceapp/glance"],
+      bumpVersions: [
+        {
+          name: "Updating chart version build metadata",
+          filePatterns: ["/^charts\\/glance\\/Chart\\.yaml$/"],
+          bumpType: "sync",
+          matchStrings: ['version: "[^"+]*\\+glance-(?<currentValue>[^"]+)"'],
+        },
+        {
+          name: "Bump chart version",
+          filePatterns: ["/^charts\\/glance\\/Chart\\.yaml$/"],
+          bumpType: "{{#if isPatch}}patch{{else}}minor{{/if}}",
+          matchStrings: ['version: "(?<currentValue>[^"+])+glance-[^"]+"'],
+        },
+      ],
+    },
+  ],
+}
