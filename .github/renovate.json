@@ -1,5 +1,6 @@
 {
 	"$schema": "https://docs.renovatebot.com/renovate-schema.json",
+	
 	"customManagers": [
 		{
 			"customType": "regex",
@@ -15,7 +16,17 @@
 			"datasourceTemplate": "docker"
 		}
 	],
+	
 	"packageRules": [
+		{
+			"matchDatasources": [
+				"go"
+			],
+			"postUpdateOptions": [
+				"gomodTidy",
+				"gomodUpdateImportPaths"
+			]
+		},
 		{
 			"groupName": "k8s.io",
 			"matchPackageNames": [
