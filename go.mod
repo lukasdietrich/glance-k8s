@@ -5,7 +5,7 @@ go 1.26.0
 require (
 	github.com/Masterminds/sprig/v3 v3.3.0
 	github.com/expr-lang/expr v1.17.8
-	github.com/labstack/echo/v5 v5.2.0
+	github.com/labstack/echo/v5 v5.2.1
 	github.com/samber/lo v1.53.0
 	golang.org/x/sync v0.21.0
 	golang.org/x/text v0.38.0
