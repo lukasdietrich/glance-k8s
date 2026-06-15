@@ -44,7 +44,7 @@ podSecurityContext:
 securityContext:
   capabilities:
     drop:
-    - ALL
+      - ALL
   readOnlyRootFilesystem: true
   runAsNonRoot: true
   runAsUser: 1000
@@ -124,6 +124,16 @@ volumeMounts: []
 # - name: foo
 #   mountPath: "/etc/foo"
 #   readOnly: true
+
+# Additional environment variables on the output Deployment definition.
+env: []
+  # - name: ENV_VARIABLE
+  #   value: foo
+
+# Additional environment variables from references on the output Deployment definition.
+envFrom: []
+  # - secretRef:
+  #     name: glance-secrets
 
 nodeSelector: {}
 
