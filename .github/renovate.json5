@@ -1,9 +1,7 @@
 {
   $schema: "https://docs.renovatebot.com/renovate-schema.json",
 
-  extends: ["config:best-practices"],
-
-  enabledManagers: ["dockerfile", "github-actions", "gomod", "custom.regex"],
+  extends: ["config:recommended", "helpers:pinGitHubActionDigests"],
 
   customManagers: [
     {
