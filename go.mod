@@ -8,7 +8,7 @@ require (
 	github.com/labstack/echo/v5 v5.3.0
 	github.com/samber/lo v1.53.0
 	golang.org/x/sync v0.22.0
-	golang.org/x/text v0.39.0
+	golang.org/x/text v0.40.0
 	k8s.io/api v0.36.2
 	k8s.io/apimachinery v0.36.2
 	k8s.io/client-go v0.36.2
