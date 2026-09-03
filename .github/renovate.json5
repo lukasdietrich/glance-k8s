@@ -30,7 +30,7 @@
           name: "Bump chart version",
           filePatterns: ["/^charts\\/glance\\/Chart\\.yaml$/"],
           bumpType: "{{#if isPatch}}patch{{else}}minor{{/if}}",
-          matchStrings: ['version: "(?<currentValue>[^"]+)"'],
+          matchStrings: ['version: "(?<version>[^"]+)"'],
         },
       ],
     },
