@@ -4,5 +4,5 @@ description: A Helm chart for glance
 source:
   - https://github.com/glanceapp/glance
 type: application
-version: "v1.1.2"
-appVersion: "v0.8.7"
+version: "v1.1.3"
+appVersion: "v0.8.8"
